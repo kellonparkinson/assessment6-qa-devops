@@ -1,14 +1,15 @@
 const express = require('express')
 const path = require('path')
-const app = express()
+require('dotenv').config()
 const {bots, playerRecord} = require('./data')
 const {shuffleArray} = require('./utils')
 
+const app = express()
 app.use(express.json())
 
 var Rollbar = require('rollbar')
 var rollbar = new Rollbar({
-  accessToken: 'a147ef759abc4d0f8120878504661d69', // didn't put in .env for sake of time
+  accessToken: process.env.ROLLBAR_TOKEN,
   captureUncaught: true,
   captureUnhandledRejections: true,
 })
@@ -91,7 +92,7 @@ app.get('/api/player', (req, res) => {
         res.status(200).send(playerRecord)
     } catch (error) {
         rollbar.warn('stats are inaccurate')
-        
+
         console.log('ERROR GETTING PLAYER STATS', error)
         res.sendStatus(400)
     }
