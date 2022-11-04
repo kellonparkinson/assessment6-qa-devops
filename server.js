@@ -6,6 +6,14 @@ const {shuffleArray} = require('./utils')
 
 app.use(express.json())
 
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: 'a147ef759abc4d0f8120878504661d69', // didn't put in .env for sake of time
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+rollbar.log('Hello world!')
+
 // Paths
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.html'))
@@ -18,12 +26,14 @@ app.get('/js', (req, res) => {
 app.get('/styles', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.css'))
 })
-// -----------------------------------
+// ------
 
 app.get('/api/robots', (req, res) => {
     try {
+        rollbar.info('got the bots')
         res.status(200).send(botsArr)
     } catch (error) {
+        rollbar.error('No bots!')
         console.log('ERROR GETTING BOTS', error)
         res.sendStatus(400)
     }
@@ -66,7 +76,11 @@ app.post('/api/duel', (req, res) => {
             playerRecord.losses++
             res.status(200).send('You won!')
         }
+
+        rollbar.info('duel successful')
     } catch (error) {
+        rollbar.critical('Duels are not working')
+
         console.log('ERROR DUELING', error)
         res.sendStatus(400)
     }
@@ -76,6 +90,8 @@ app.get('/api/player', (req, res) => {
     try {
         res.status(200).send(playerRecord)
     } catch (error) {
+        rollbar.warn('stats are inaccurate')
+        
         console.log('ERROR GETTING PLAYER STATS', error)
         res.sendStatus(400)
     }
